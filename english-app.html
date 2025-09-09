@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Language Learning App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f0f8ff;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button.active {
+            background: #2196F3;
+        }
+        .mode {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        .hidden {
+            display: none;
+        }
+        .word-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #4CAF50;
+        }
+        .card {
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .quiz-option {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .quiz-option:hover {
+            border-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Language Learning App</h1>
+        
+        <div style="text-align: center;">
+            <button id="learn-btn" class="active" onclick="showLearn()">Learn Words</button>
+            <button id="flash-btn" onclick="showFlash()">Flashcards</button>
+            <button id="quiz-btn" onclick="showQuiz()">Quiz</button>
+        </div>
+        
+        <!-- Learn Mode -->
+        <div id="learn-mode" class="mode">
+            <h2>Learn These Words:</h2>
+            <div class="word-item">
+                <strong>Hello</strong><br>
+                Pronunciation: kon-nee-chee-wah<br>
+                <em>A common greeting</em>
+            </div>
+            <div class="word-item">
+                <strong>Thank you</strong><br>
+                Pronunciation: ah-ree-gah-toh<br>
+                <em>Express gratitude</em>
+            </div>
+            <div class="word-item">
+                <strong>Excuse me</strong><br>
+                Pronunciation: soo-mee-mah-sen<br>
+                <em>Polite way to get attention</em>
+            </div>
+            <div class="word-item">
+                <strong>Yes</strong><br>
+                Pronunciation: hi<br>
+                <em>Affirmative response</em>
+            </div>
+            <div class="word-item">
+                <strong>No</strong><br>
+                Pronunciation: ee-eh<br>
+                <em>Negative response</em>
+            </div>
+        </div>
+        
+        <!-- Flashcard Mode -->
+        <div id="flash-mode" class="mode hidden">
+            <h2>Flashcards</h2>
+            <div class="card">
+                <h3 id="card-word">Hello</h3>
+                <button onclick="showAnswer()">Show Pronunciation</button>
+                <div id="card-answer" class="hidden" style="margin-top: 20px;">
+                    <p><strong>Pronunciation:</strong> kon-nee-chee-wah</p>
+                    <p><strong>Meaning:</strong> A common greeting</p>
+                </div>
+            </div>
+            <div style="text-align: center;">
+                <button onclick="nextCard()">Next Card</button>
+                <button onclick="hideAnswer()">Hide Answer</button>
+            </div>
+        </div>
+        
+        <!-- Quiz Mode -->
+        <div id="quiz-mode" class="mode hidden">
+            <h2>Quiz</h2>
+            <h3>How do you pronounce "Hello"?</h3>
+            <button class="quiz-option" onclick="checkAnswer(this, true)">kon-nee-chee-wah</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false)">ah-ree-gah-toh</button>
+            <button class="quiz-option" onclick="checkAnswer(this, false)">soo-mee-mah-sen</button>
+            <div id="quiz-result" style="margin-top: 20px; font-weight: bold; text-align: center;"></div>
+        </div>
+    </div>
+    
+    <script>
+        let currentCard = 0;
+        const words = [
+            {word: "Hello", pronunciation: "kon-nee-chee-wah", meaning: "A common greeting"},
+            {word: "Thank you", pronunciation: "ah-ree-gah-toh", meaning: "Express gratitude"},
+            {word: "Excuse me", pronunciation: "soo-mee-mah-sen", meaning: "Polite way to get attention"},
+            {word: "Yes", pronunciation: "hi", meaning: "Affirmative response"},
+            {word: "No", pronunciation: "ee-eh", meaning: "Negative response"}
+        ];
+        
+        function showLearn() {
+            document.getElementById('learn-mode').classList.remove('hidden');
+            document.getElementById('flash-mode').classList.add('hidden');
+            document.getElementById('quiz-mode').classList.add('hidden');
+            setActiveButton('learn-btn');
+        }
+        
+        function showFlash() {
+            document.getElementById('learn-mode').classList.add('hidden');
+            document.getElementById('flash-mode').classList.remove('hidden');
+            document.getElementById('quiz-mode').classList.add('hidden');
+            setActiveButton('flash-btn');
+            updateCard();
+        }
+        
+        function showQuiz() {
+            document.getElementById('learn-mode').classList.add('hidden');
+            document.getElementById('flash-mode').classList.add('hidden');
+            document.getElementById('quiz-mode').classList.remove('hidden');
+            setActiveButton('quiz-btn');
+        }
+        
+        function setActiveButton(activeId) {
+            document.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(activeId).classList.add('active');
+        }
+        
+        function updateCard() {
+            const word = words[currentCard];
+            document.getElementById('card-word').textContent = word.word;
+            hideAnswer();
+        }
+        
+        function showAnswer() {
+            document.getElementById('card-answer').classList.remove('hidden');
+            const word = words[currentCard];
+            document.getElementById('card-answer').innerHTML = 
+                `<p><strong>Pronunciation:</strong> ${word.pronunciation}</p>
+                 <p><strong>Meaning:</strong> ${word.meaning}</p>`;
+        }
+        
+        function hideAnswer() {
+            document.getElementById('card-answer').classList.add('hidden');
+        }
+        
+        function nextCard() {
+            currentCard = (currentCard + 1) % words.length;
+            updateCard();
+        }
+        
+        function checkAnswer(button, isCorrect) {
+            const result = document.getElementById('quiz-result');
+            if (isCorrect) {
+                button.style.background = '#4CAF50';
+                result.innerHTML = 'Correct! Well done!';
+                result.style.color = '#4CAF50';
+            } else {
+                button.style.background = '#f44336';
+                result.innerHTML = 'Try again!';
+                result.style.color = '#f44336';
+            }
+        }
+        
+        // Test alert
+        alert('App loaded successfully! Click OK to start learning.');
+        console.log('Language Learning App is working!');
+    </script>
+</body>
+</html>
